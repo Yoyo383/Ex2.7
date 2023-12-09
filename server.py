@@ -3,6 +3,7 @@ Author: Yoad Winter
 Date: 9.12.2023
 Description: The server for exercise 2.7.
 """
+import shutil
 import socket
 import os
 import logging
@@ -14,6 +15,11 @@ IP = '127.0.0.1'
 PORT = 8080
 
 SERVER_CLOSED_MSG = 'Server has closed, disconnecting.'
+
+CWD = os.getcwd().replace('\\', '/')
+TEST_FOLDER = CWD + '/test'
+FIRST_FILE = '/sand_rant.txt'
+SECOND_FILE = '/sand_rant2.txt'
 
 LOG_FORMAT = '[%(levelname)s | %(asctime)s | %(processName)s] %(message)s'
 LOG_LEVEL = logging.DEBUG
@@ -146,6 +152,23 @@ def main():
 
 
 if __name__ == '__main__':
+
+    # prepare for asserts
+    os.mkdir(TEST_FOLDER)
+    with open(TEST_FOLDER + FIRST_FILE, 'w') as f:
+        f.write("I Don't Like Sand. It's Coarse And Rough And Irritating, And It Gets Everywhere.")
+
+    try:
+        assert execute_command('DIR', f"('{TEST_FOLDER}')") == TEST_FOLDER + FIRST_FILE
+        assert (execute_command('COPY', f"('{TEST_FOLDER + FIRST_FILE}', '{TEST_FOLDER + SECOND_FILE}')") ==
+                f"Successfully copied '{TEST_FOLDER + FIRST_FILE}' into '{TEST_FOLDER + SECOND_FILE}'.")
+        assert (execute_command('DELETE', f"('{TEST_FOLDER + SECOND_FILE}')") ==
+                f"Deleted '{TEST_FOLDER + SECOND_FILE}'.")
+    except AssertionError as error:
+        raise error
+    finally:
+        shutil.rmtree(TEST_FOLDER)
+
     if not os.path.isdir(LOG_DIR):
         os.mkdir(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)

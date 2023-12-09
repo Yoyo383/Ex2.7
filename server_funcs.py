@@ -22,8 +22,8 @@ def func_dir(path):
     """
     if not os.path.isdir(path):
         return f"'{path}' is not a directory."
-    files = glob.glob(f'{path}/*.*')  # using / instead of \ so it could also work on Mac and Linux.
-    return '\n'.join(files)
+    files = glob.glob(f'{path}/*.*')
+    return '\n'.join(files).replace('\\', '/')
 
 
 def func_delete(path):
