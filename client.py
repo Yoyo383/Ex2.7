@@ -1,6 +1,6 @@
 """
 Author: Yoad Winter
-Date: 16.11.2023
+Date: 9.12.2023
 Description: The client for exercise 2.7.
 """
 import socket
@@ -12,6 +12,8 @@ from PIL import Image
 
 IP = '127.0.0.1'
 PORT = 8080
+
+# dict of commands and the number of parameters they get
 COMMANDS = {'DIR': 1, 'DELETE': 1, 'COPY': 2, 'EXECUTE': 1, 'SCREENSHOT': 0, 'EXIT': 0}
 
 SERVER_CLOSED_MSG = 'Server has closed, disconnecting.'
@@ -34,6 +36,13 @@ def is_cmd_valid(cmd):
 
 
 def handle_response(response):
+    """
+    Takes a response tuple in the form of (cmd, data) and handles what to do with it. If the cmd is screenshot,
+    save it, and if it's anything else, print it.
+    :param response: The response tuple.
+    :type response: tuple[str, str]
+    :return: None.
+    """
     if response[0] == 'SCREENSHOT':
         logging.info('Server sent: image.jpg')
         data = eval(response[1])  # turns it into a tuple of the mode, the size, and the bytes.
@@ -64,10 +73,12 @@ def main_loop(server_socket):
         if is_cmd_valid(cmd):
             if len(args) != COMMANDS[cmd]:
                 print(f'Expected {COMMANDS[cmd]} arguments but received {len(args)}.')
+                logging.warning(f'{cmd}: expected {COMMANDS[cmd]} arguments but received {len(args)}.')
                 continue
             if cmd == 'EXIT':
                 to_exit = True
 
+            # puts each argument in quotations (for the eval() at the server)
             args = [f"'{arg}'" for arg in args]
             # convert arguments to a string that looks like a tuple (for the eval() at the server)
             data = f"({','.join(args)})"
@@ -82,7 +93,7 @@ def main_loop(server_socket):
                 break
         else:
             logging.warning(f'Client entered invalid command: {req}')
-            print('Invalid command! Enter one of the following commands: TIME | NAME | RAND | EXIT')
+            print('Invalid command!')
 
 
 def main():

@@ -1,6 +1,6 @@
 """
 Author: Yoad Winter
-Date: 16.11.2023
+Date: 9.12.2023
 Description: The server for exercise 2.7.
 """
 import socket
@@ -10,7 +10,6 @@ import protocol
 import server_funcs
 
 QUEUE_LEN = 1
-REQUEST_LEN = 4
 IP = '127.0.0.1'
 PORT = 8080
 
@@ -23,7 +22,18 @@ LOG_FILE = LOG_DIR + '/server.log'
 
 
 def execute_command(cmd, data):
+    """
+    Executes the command with the given arguments.
+    :param cmd: The command.
+    :type cmd: str
+    :param data: The arguments as a string in the following format: "(param1, param2, ...)"
+    :type data: str
+    :return: The result of the command.
+    :rtype: str
+    """
+    # gets the function from server_funcs using getattr()
     cmd_func = getattr(server_funcs, f'func_{cmd.lower()}')
+    # convert data into a tuple (or a string if it's just one argument) using eval().
     return cmd_func(eval(data))
 
 
