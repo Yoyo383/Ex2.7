@@ -44,7 +44,7 @@ def func_execute(path):
 def func_screenshot(param):
     image = pyautogui.screenshot()
     image.save('image.jpg')
-    return f'{image.mode}, {image.size}, {image.tobytes()}'
+    return f"'{image.mode}', {image.size}, {image.tobytes()}"
 
 
 def func_exit(param):

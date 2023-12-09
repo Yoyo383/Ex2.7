@@ -8,6 +8,7 @@ import logging
 import os
 import protocol
 import shlex
+from PIL import Image
 
 IP = '127.0.0.1'
 PORT = 8080
@@ -30,6 +31,19 @@ def is_cmd_valid(cmd):
     :rtype: bool
     """
     return cmd in COMMANDS.keys()
+
+
+def handle_response(response):
+    if response[0] == 'SCREENSHOT':
+        logging.info('Server sent: image.jpg')
+        data = eval(response[1])  # turns it into a tuple of the mode, the size, and the bytes.
+        image = Image.frombytes(data[0], data[1], data[2])
+        image.save('image.jpg')
+        print('Saved screenshot to image.jpg')
+        logging.info('Saved screenshot to image.jpg')
+    else:
+        logging.info(f'Server sent: {response}')
+        print(response[1])
 
 
 def main_loop(server_socket):
@@ -62,9 +76,7 @@ def main_loop(server_socket):
             logging.info(f'Client sent: {req}')
 
             response = protocol.receive(server_socket)
-            data = response[1]
-            logging.info(f'Server sent: {response}')
-            print(data)
+            handle_response(response)
             if data == SERVER_CLOSED_MSG:
                 logging.debug(f'Server closed, client disconnected.')
                 break
