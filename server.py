@@ -4,20 +4,17 @@ Date: 16.11.2023
 Description: The server for exercise 2.7.
 """
 import socket
-from datetime import datetime, timedelta
-import random
 import os
 import logging
+import protocol
+import server_funcs
 
 QUEUE_LEN = 1
 REQUEST_LEN = 4
-SERVER_NAME = 'the yoyo server'
 IP = '127.0.0.1'
-PORT = 8000
+PORT = 8080
 
 SERVER_CLOSED_MSG = 'Server has closed, disconnecting.'
-
-TIME_FORMAT = '%d.%m.%Y, %H:%M:%S'
 
 LOG_FORMAT = '[%(levelname)s | %(asctime)s | %(processName)s] %(message)s'
 LOG_LEVEL = logging.DEBUG
@@ -25,57 +22,9 @@ LOG_DIR = 'log'
 LOG_FILE = LOG_DIR + '/server.log'
 
 
-def return_time():
-    """
-    Returns current date and time.
-    :return: Current date and time.
-    :rtype: str
-    """
-    now = datetime.now()
-    return now.strftime(TIME_FORMAT)
-
-
-def return_name():
-    """
-    Returns the server name.
-    :return: The server name.
-    :rtype: str
-    """
-    return SERVER_NAME
-
-
-def return_rand():
-    """
-    Returns a random number between 1 and 10.
-    :return: A random number between 1 and 10.
-    :rtype: int
-    """
-    return random.randint(1, 10)
-
-
-def request_to_response(request):
-    """
-    Gets the request and returns the proper response.
-    :param request: The request.
-    :type request: str
-    :return: The proper response.
-    :rtype: str
-    """
-    if request == 'TIME':
-        return return_time()
-
-    elif request == 'NAME':
-        return return_name()
-
-    elif request == 'RAND':
-        return str(return_rand())
-
-    elif request == 'EXIT':
-        return 'Exiting.'
-
-    else:
-        # not used anywhere because the input is valid (checked in client) but I still wanted to return something.
-        return 'Invalid command.'
+def execute_command(cmd, data):
+    cmd_func = getattr(server_funcs, f'func_{cmd.lower()}')
+    return cmd_func(*eval(data))
 
 
 def connect_socket(server_socket):
@@ -130,17 +79,14 @@ def main_loop(client_socket):
     result = True
 
     try:
-        req = ''
-        while req != 'EXIT':
-            req = client_socket.recv(REQUEST_LEN).decode()
+        cmd = ''
+        while cmd != 'EXIT':
+            req = protocol.receive(client_socket)
             logging.info(f'Client sent: {req}')
 
-            response = request_to_response(req)
-            message = protocolize_content(response)
-            logging.debug(f'Response is: {response}, protocol is: {message}.')
-
-            client_socket.send(message.encode())
-            logging.info(f'Server sent: {message}')
+            cmd, data = req
+            response = execute_command(cmd, data)
+            protocol.send(client_socket, cmd, response)
 
         client_socket.close()
         print('Client disconnected.')
@@ -152,7 +98,7 @@ def main_loop(client_socket):
 
     except KeyboardInterrupt:
         print('Keyboard interrupt detected, closing server.')
-        client_socket.send(protocolize_content(SERVER_CLOSED_MSG).encode())
+        protocol.send(client_socket, 'EXIT', SERVER_CLOSED_MSG)
         logging.debug('Keyboard interrupt detected, closing server.')
         result = False
 
@@ -202,16 +148,6 @@ def main():
 
 
 if __name__ == '__main__':
-    for i in range(20):
-        assert 1 <= return_rand() <= 10
-    assert return_name() == SERVER_NAME
-    # Checks if the time returned by return_time() is at most 1 second before the current time (to see if it returns
-    # the correct time).
-    assert datetime.strptime(return_time(), TIME_FORMAT) - datetime.now() <= timedelta(seconds=1)
-    assert request_to_response('NAME') == SERVER_NAME
-    assert request_to_response('EXIT') == 'Exiting.'
-    assert protocolize_content('Do. Or do not. There is no try.') == '31$Do. Or do not. There is no try.'
-
     if not os.path.isdir(LOG_DIR):
         os.mkdir(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)

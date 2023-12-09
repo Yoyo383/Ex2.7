@@ -6,10 +6,12 @@ Description: The client for exercise 2.7.
 import socket
 import logging
 import os
+import protocol
+import shlex
 
 IP = '127.0.0.1'
-PORT = 8000
-COMMANDS = ['TIME', 'NAME', 'RAND', 'EXIT']
+PORT = 8080
+COMMANDS = {'DIR': 1, 'DELETE': 1, 'COPY': 2, 'EXECUTE': 1, 'SCREENSHOT': 0, 'EXIT': 0}
 
 SERVER_CLOSED_MSG = 'Server has closed, disconnecting.'
 
@@ -17,24 +19,6 @@ LOG_FORMAT = '[%(levelname)s | %(asctime)s | %(processName)s] %(message)s'
 LOG_LEVEL = logging.DEBUG
 LOG_DIR = 'log'
 LOG_FILE = LOG_DIR + '/client.log'
-
-
-def get_response(server_socket):
-    """
-    Gets the response from the server and extracts the content.
-    :param server_socket: The socket.
-    :type server_socket: socket.socket
-    :return: The content of the response.
-    :rtype: str
-    """
-    count = 0
-
-    char = server_socket.recv(1).decode()
-    while char != '$':
-        count = count * 10 + int(char)
-        char = server_socket.recv(1).decode()
-
-    return server_socket.recv(count).decode()
 
 
 def is_cmd_valid(cmd):
@@ -45,7 +29,7 @@ def is_cmd_valid(cmd):
     :return: Whether the command is valid.
     :rtype: bool
     """
-    return cmd in COMMANDS
+    return cmd in COMMANDS.keys()
 
 
 def main_loop(server_socket):
@@ -56,18 +40,22 @@ def main_loop(server_socket):
     :type server_socket: socket.socket
     :return: None
     """
-    req = ''
-    while req != 'EXIT':
-        req = input('ENTER COMMAND: ')
+    cmd = ''
+    while cmd != 'EXIT':
+        req = shlex.split(input('ENTER COMMAND: ').replace('\\', '/'))
 
-        if is_cmd_valid(req):
-            server_socket.send(req.encode())
+        if is_cmd_valid(req[0]):
+            cmd, *args = req
+            if len(args) != COMMANDS[cmd]:
+                print(f'Expected {COMMANDS[cmd]} arguments but received {len(args)}.')
+                continue
+            protocol.send(server_socket, cmd, args)
             logging.info(f'Client sent: {req}')
 
-            response = get_response(server_socket)
+            response = protocol.receive(server_socket)
             logging.info(f'Server sent: {response}')
-            print(response)
-            if response == SERVER_CLOSED_MSG:
+            print(response[1])
+            if response[1] == SERVER_CLOSED_MSG:
                 logging.debug(f'Server closed, client disconnected.')
                 break
         else:
@@ -94,7 +82,7 @@ def main():
         print('Socket error: ' + str(err))
 
     except KeyboardInterrupt:
-        server_socket.send('EXIT'.encode())
+        protocol.send(server_socket, 'EXIT', [])
         logging.debug('Keyboard interrupt detected from client, disconnecting from server.')
 
     finally:
@@ -103,12 +91,6 @@ def main():
 
 
 if __name__ == '__main__':
-    assert is_cmd_valid('TIME')
-    assert is_cmd_valid('RAND')
-    assert is_cmd_valid('NAME')
-    assert is_cmd_valid('EXIT')
-    assert not is_cmd_valid('I HAVE THE HIGH GROUND')
-
     if not os.path.isdir(LOG_DIR):
         os.mkdir(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)
