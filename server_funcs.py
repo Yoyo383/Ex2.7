@@ -20,7 +20,8 @@ def func_delete(path):
     return f"Deleted '{path}'."
 
 
-def func_copy(source, destination):
+def func_copy(paths):
+    source, destination = paths
     if not os.path.isfile(source):
         return f"'{source}' does not exist."
     try:
@@ -40,11 +41,11 @@ def func_execute(path):
         return f"Could not execute '{path}'."
 
 
-def func_screenshot():
+def func_screenshot(param):
     image = pyautogui.screenshot()
     image.save('image.jpg')
-    return str((image.mode, image.size, image.tobytes()))
+    return f'{image.mode}, {image.size}, {image.tobytes()}'
 
 
-def func_exit():
+def func_exit(param):
     return 'Exiting.'

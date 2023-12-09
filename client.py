@@ -40,22 +40,32 @@ def main_loop(server_socket):
     :type server_socket: socket.socket
     :return: None
     """
-    cmd = ''
-    while cmd != 'EXIT':
+    to_exit = False
+    while not to_exit:
+        print('Enter one of the following commands: DIR <path> | DELETE <path> | COPY <src> <dest> | EXECUTE <path> | '
+              'SCREENSHOT | EXIT')
         req = shlex.split(input('ENTER COMMAND: ').replace('\\', '/'))
 
-        if is_cmd_valid(req[0]):
-            cmd, *args = req
+        cmd, *args = req
+        if is_cmd_valid(cmd):
             if len(args) != COMMANDS[cmd]:
                 print(f'Expected {COMMANDS[cmd]} arguments but received {len(args)}.')
                 continue
-            protocol.send(server_socket, cmd, args)
+            if cmd == 'EXIT':
+                to_exit = True
+
+            args = [f"'{arg}'" for arg in args]
+            # convert arguments to a string that looks like a tuple (for the eval() at the server)
+            data = f"({','.join(args)})"
+
+            protocol.send(server_socket, cmd, data)
             logging.info(f'Client sent: {req}')
 
             response = protocol.receive(server_socket)
+            data = response[1]
             logging.info(f'Server sent: {response}')
-            print(response[1])
-            if response[1] == SERVER_CLOSED_MSG:
+            print(data)
+            if data == SERVER_CLOSED_MSG:
                 logging.debug(f'Server closed, client disconnected.')
                 break
         else:
@@ -82,7 +92,7 @@ def main():
         print('Socket error: ' + str(err))
 
     except KeyboardInterrupt:
-        protocol.send(server_socket, 'EXIT', [])
+        protocol.send(server_socket, 'EXIT', '')
         logging.debug('Keyboard interrupt detected from client, disconnecting from server.')
 
     finally:

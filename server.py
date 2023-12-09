@@ -8,6 +8,8 @@ import os
 import logging
 import protocol
 import server_funcs
+import signal
+import sys
 
 QUEUE_LEN = 1
 REQUEST_LEN = 4
@@ -24,7 +26,7 @@ LOG_FILE = LOG_DIR + '/server.log'
 
 def execute_command(cmd, data):
     cmd_func = getattr(server_funcs, f'func_{cmd.lower()}')
-    return cmd_func(*eval(data))
+    return cmd_func(eval(data))
 
 
 def connect_socket(server_socket):
@@ -56,17 +58,6 @@ def connect_to_client(server_socket):
     return client_socket
 
 
-def protocolize_content(content):
-    """
-    Protocolizes the content as the following: the number of bytes, followed by a $ and then the content.
-    :param content: The content.
-    :type content: str
-    :return: The message to send.
-    :rtype: str
-    """
-    return str(len(content)) + '$' + content
-
-
 def main_loop(client_socket):
     """
     The loop where the socket waits for a request, gets the proper response, and sends it. If the request is EXIT,
@@ -76,8 +67,6 @@ def main_loop(client_socket):
     :return: Whether the server stays open after the client disconnects (returns False if received KeyboardInterrupt).
     :rtype: bool
     """
-    result = True
-
     try:
         cmd = ''
         while cmd != 'EXIT':
@@ -100,12 +89,13 @@ def main_loop(client_socket):
         print('Keyboard interrupt detected, closing server.')
         protocol.send(client_socket, 'EXIT', SERVER_CLOSED_MSG)
         logging.debug('Keyboard interrupt detected, closing server.')
-        result = False
+        return False
 
     finally:
         client_socket.close()
         logging.debug('Client socket closed.')
-        return result
+
+    return True
 
 
 def connect_client_loop(server_socket):

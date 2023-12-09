@@ -39,4 +39,4 @@ def receive_part(sock):
 def receive(sock):
     cmd = receive_part(sock)
     data = receive_part(sock)
-    return [cmd, data]
+    return cmd, data
