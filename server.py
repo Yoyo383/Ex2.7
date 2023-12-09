@@ -8,8 +8,6 @@ import os
 import logging
 import protocol
 import server_funcs
-import signal
-import sys
 
 QUEUE_LEN = 1
 REQUEST_LEN = 4
