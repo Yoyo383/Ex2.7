@@ -35,6 +35,19 @@ def is_cmd_valid(cmd):
     return cmd in COMMANDS.keys()
 
 
+def is_args_num_correct(cmd, args):
+    """
+    Checks if the number of arguments given is correct.
+    :param cmd: The command.
+    :type cmd: str
+    :param args: The arguments
+    :type args: list
+    :return: Whether the number of arguments given is correct.
+    :rtype: bool
+    """
+    return COMMANDS[cmd] == len(args)
+
+
 def handle_response(response):
     """
     Takes a response tuple in the form of (cmd, data) and handles what to do with it. If the cmd is screenshot,
@@ -67,11 +80,12 @@ def main_loop(server_socket):
     while not to_exit:
         print('Enter one of the following commands: DIR <path> | DELETE <path> | COPY <src> <dest> | EXECUTE <path> | '
               'SCREENSHOT | EXIT')
+        # this splits the input into the parts of it. replacing \ with / because it doesn't work with \.
         req = shlex.split(input('ENTER COMMAND: ').replace('\\', '/'))
 
         cmd, *args = req
         if is_cmd_valid(cmd):
-            if len(args) != COMMANDS[cmd]:
+            if not is_args_num_correct(cmd, args):
                 print(f'Expected {COMMANDS[cmd]} arguments but received {len(args)}.')
                 logging.warning(f'{cmd}: expected {COMMANDS[cmd]} arguments but received {len(args)}.')
                 continue
@@ -124,6 +138,22 @@ def main():
 
 
 if __name__ == '__main__':
+    assert is_cmd_valid('DIR')
+    assert is_cmd_valid('DELETE')
+    assert is_cmd_valid('COPY')
+    assert is_cmd_valid('EXECUTE')
+    assert is_cmd_valid('SCREENSHOT')
+    assert is_cmd_valid('EXIT')
+    assert not is_cmd_valid('TELL ME A JOKE')
+
+    assert is_args_num_correct('DIR', ['C:\\'])
+    assert is_args_num_correct('DELETE', ['C:\\Dev\\hello.txt'])
+    assert is_args_num_correct('COPY', ['C:\\Dev\\hello.txt', 'C:\\Dev\\hello2.txt'])
+    assert is_args_num_correct('EXECUTE', ['C:\\Windows\\System32\\notepad.exe'])
+    assert is_args_num_correct('SCREENSHOT', [])
+    assert is_args_num_correct('EXIT', [])
+    assert not is_args_num_correct('DIR', [])
+
     if not os.path.isdir(LOG_DIR):
         os.mkdir(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)
