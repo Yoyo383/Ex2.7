@@ -12,7 +12,10 @@ The arguments passed to the command are in the form of `"(arg1, arg2, ...)"`. Wh
 will be converted to a tuple of all these arguments, or if there's only one argument it will be that one argument.
 
 I also chose to use only `/` (forward-slash) instead of `\​` (backslash) because it works better with `eval()` and
-string literals.
+`shlex.split()` (Used for the client input).
+
+I combined the commands `TAKE_SCREENSHOT` and `SEND_PHOTO` into one command `SCREENSHOT` that takes a screenshot, saves
+it as `image.jpg` in the server, and then sends the screenshot to the client and saves it as `image.jpg` on the client.
 
 Sequence diagram:
 
