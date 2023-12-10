@@ -1,6 +1,9 @@
 # Ex2.7
 Exercise 2.7 for school.
 
+
+### Protocol
+
 I used the following protocol:
 
     <cmd_length><cmd><data_length><data>
@@ -14,11 +17,28 @@ will be converted to a tuple of all these arguments, or if there's only one argu
 I also chose to use only `/` (forward-slash) instead of `\​` (backslash) because it works better with `eval()` and
 `shlex.split()` (Used for the client input).
 
-I combined the commands `TAKE_SCREENSHOT` and `SEND_PHOTO` into one command `SCREENSHOT` that takes a screenshot, saves
-it as `image.jpg` in the server, and then sends the screenshot to the client and saves it as `image.jpg` on the client.
-
 Sequence diagram:
 
 ![sequence diagram](protocol.png)
+
+### Commands
+
+`DIR <path>`: Shows the files in the directory at `<path>`.
+
+`DELETE <path>`: Deletes the file at `<path>`.
+
+`COPY <source> <destination>`: Copies the file at `<source>` to `<destination>`.
+
+`EXECUTE <path>`: Executes the executable at `<path>`.
+
+`SCREENSHOT`: Takes a screenshot, saves
+it as `image.jpg` in the server, and then sends the screenshot to the client and saves it as `image.jpg` on the client.
+
+`EXIT`: Disconnects the client from the server.
+
+### General info
+
+I combined the commands `TAKE_SCREENSHOT` and `SEND_PHOTO` into one command `SCREENSHOT` that takes a screenshot, saves
+it as `image.jpg` in the server, and then sends the screenshot to the client and saves it as `image.jpg` on the client.
 
 Apparently the code of the keyboard interrupts that I also used in 2.6 works only on linux and not on windows, and I couldn't get anything else to work :( I tried signals, threading, and other stuff, and it didn't work. I still left it here because I believe that every OS equally important :)
