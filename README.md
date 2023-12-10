@@ -23,18 +23,18 @@ Sequence diagram:
 
 ### Commands
 
-`DIR <path>`: Shows the files in the directory at `<path>`.
+- `DIR <path>`: Shows the files in the directory at `<path>`.
 
-`DELETE <path>`: Deletes the file at `<path>`.
+- `DELETE <path>`: Deletes the file at `<path>`.
 
-`COPY <source> <destination>`: Copies the file at `<source>` to `<destination>`.
+- `COPY <source> <destination>`: Copies the file at `<source>` to `<destination>`.
 
-`EXECUTE <path>`: Executes the executable at `<path>`.
+- `EXECUTE <path>`: Executes the executable at `<path>`.
 
-`SCREENSHOT`: Takes a screenshot, saves
+- `SCREENSHOT`: Takes a screenshot, saves
 it as `image.jpg` in the server, and then sends the screenshot to the client and saves it as `image.jpg` on the client.
 
-`EXIT`: Disconnects the client from the server.
+- `EXIT`: Disconnects the client from the server.
 
 When the path has spaces, it should be put between quotation marks like this: `DIR "/path with spaces/to/file"`.
 
