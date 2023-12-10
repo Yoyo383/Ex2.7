@@ -44,3 +44,5 @@ I combined the commands `TAKE_SCREENSHOT` and `SEND_PHOTO` into one command `SCR
 it as `image.jpg` in the server, and then sends the screenshot to the client and saves it as `image.jpg` on the client.
 
 Apparently the code of the keyboard interrupts that I also used in 2.6 works only on linux and not on windows, and I couldn't get anything else to work :( I tried signals, threading, and other stuff, and it didn't work. I still left it here because I believe that every OS equally important :)
+
+Nir I just found out that I could just read the data from the image file on the server and then create another image on the client and just copy the data. Of course I didn't think of that and just passed the mode and the size of the image for the `Image.frombytes()`. So I just made it harder for myself for no reason :(
