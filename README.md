@@ -36,6 +36,8 @@ it as `image.jpg` in the server, and then sends the screenshot to the client and
 
 `EXIT`: Disconnects the client from the server.
 
+When the path has spaces, it should be put between quotation marks like this: `DIR "/path with spaces/to/file"`.
+
 ### General info
 
 I combined the commands `TAKE_SCREENSHOT` and `SEND_PHOTO` into one command `SCREENSHOT` that takes a screenshot, saves
