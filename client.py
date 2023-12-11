@@ -129,7 +129,7 @@ def main():
         print('Socket error: ' + str(err))
 
     except KeyboardInterrupt:
-        protocol.send(server_socket, 'EXIT', '')
+        protocol.send(server_socket, 'EXIT', 'CRASH')
         logging.debug('Keyboard interrupt detected from client, disconnecting from server.')
 
     finally:

@@ -88,6 +88,8 @@ def main_loop(client_socket):
             logging.info(f'Client sent: {req}')
 
             cmd, data = req
+            if cmd == 'EXIT' and data == 'CRASH':
+                break
             response = execute_command(cmd, data)
             protocol.send(client_socket, cmd, response)
 
